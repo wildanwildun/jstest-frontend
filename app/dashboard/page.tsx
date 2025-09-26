@@ -15,6 +15,7 @@ interface Comment {
   comments: string;
   user: User;
   created_at: string;
+  likes_count: number;
 }
 
 interface Post {
@@ -105,6 +106,23 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCommentLike = async (commentId: number) => {
+    const token = localStorage.getItem("token");
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/comments/${commentId}/like`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      fetchPosts(search);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <header className="flex justify-between items-center mb-6">
@@ -114,7 +132,7 @@ export default function DashboardPage() {
             onClick={() => router.push("/dashboard/create")}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
           >
-            New Post
+            + New Post
           </button>
           <button
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
@@ -180,9 +198,17 @@ export default function DashboardPage() {
                       <li key={c.id} className="border rounded-lg p-2">
                         <p className="text-sm">{c.comments}</p>
                         <p className="text-xs text-gray-500">
-                          by {c.user?.name || "Anonymous"} •{" "}
-                          {dayjs(c.created_at).format("DD MMM YYYY HH:mm")}
+                          by {c.user?.name || "Anonymous"} • {dayjs(c.created_at).format("DD MMM YYYY HH:mm")}
                         </p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <button
+                            onClick={() => handleCommentLike(c.id)}
+                            className="px-2 py-1 bg-pink-500 hover:bg-pink-600 text-white rounded-lg text-xs"
+                          >
+                            ❤️ Like
+                          </button>
+                          <span className="text-xs text-gray-600">{c.likes_count} likes</span>
+                        </div>
                       </li>
                     ))}
                   </ul>
